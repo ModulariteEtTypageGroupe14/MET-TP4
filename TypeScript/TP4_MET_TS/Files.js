@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ListeVide = /** @class */ (function () {
     function ListeVide() {
     }
@@ -36,12 +38,7 @@ var ModuleFileParListe = /** @class */ (function () {
     ModuleFileParListe.prototype.ajout = function (e, f) {
         var _this = this;
         return f.filtrage(function () { return cons(e, new ListeVide()); }, function (t, r) {
-            if (r instanceof ListeVide) {
-                return cons(e, r);
-            }
-            else {
-                return cons(t, _this.ajout(e, r));
-            }
+            return cons(t, _this.ajout(e, r));
         });
     };
     return ModuleFileParListe;
@@ -69,12 +66,8 @@ var ModuleFileParDeuxListes = /** @class */ (function () {
     return ModuleFileParDeuxListes;
 }());
 var ModuleFileAbstrait = /** @class */ (function () {
-    function ModuleFileAbstrait(liste) {
-        this.liste = liste;
+    function ModuleFileAbstrait() {
     }
-    ModuleFileAbstrait.prototype.elimination = function (k) {
-        return k(this.liste);
-    };
     return ModuleFileAbstrait;
 }());
 function vide() {
@@ -99,16 +92,17 @@ function miroir(liste) {
 }
 // Fabrique
 function abstraction(m) {
-    return new ModuleFileAbstrait(m);
+    return m;
 }
+exports.abstraction = abstraction;
 function representation(m, f) {
-    return abstraction(m).elimination(function () {
-        var listPrint = [];
-        while (!m.estVide(f)) {
-            listPrint.push(String(m.retrait(f)[0]));
-        }
-        return listPrint.join(";");
-    });
+    var result = [];
+    while (!m.estVide(f)) {
+        var l_1 = m.retrait(f);
+        result.push(String(l_1[0]));
+        f = l_1[1];
+    }
+    return result.join(";");
 }
 var listeReverse = new ListeCons("P", new ListeCons("S", new ListeCons("G", new ListeVide())));
 console.log("*************** LISTE AVANT REVERSE ***************");
@@ -130,23 +124,13 @@ console.log("*************** DOUBLE LISTE APRES AJOUT ***************");
 console.log(mfp2l.ajout("0", [l1, l2]));
 console.log("*************** DOUBLE LISTE APRES RETRAIT ***************");
 console.log(mfp2l.retrait([l1, l2]));
-console.log("*************** MODULE ABSTRACTION ***************");
-var module = abstraction(new ModuleFileParListe());
-var liste = module.elimination(function (m) {
-    m.vide();
-});
-liste = module.elimination(function (m) {
-    m.ajout(3, liste);
-});
-liste = module.elimination(function (m) {
-    m.ajout(4, liste);
-});
-liste = module.elimination(function (m) {
-    m.ajout(5, liste);
-});
-console.log(representation(module.elimination(function (k) { return k; }), liste));
-var o = module.elimination(function (m) {
-    // m.retrait(liste);
-});
-console.log(o[0]);
-console.log(representation(module.elimination(function (k) { return k; }), o[1]));
+console.log("*************** MODULE ABSTRACTION REPRESENTER ***************");
+var moduleAbstraction = abstraction(new ModuleFileParListe());
+var l = moduleAbstraction.vide();
+l = moduleAbstraction.ajout(3, l);
+l = moduleAbstraction.ajout(4, l);
+l = moduleAbstraction.ajout(5, l);
+console.log(representation(moduleAbstraction, l));
+console.log("*************** MODULE ABSTRACTION RETRAIT ***************");
+var elementRetirer = moduleAbstraction.retrait(moduleAbstraction);
+//# sourceMappingURL=Files.js.map

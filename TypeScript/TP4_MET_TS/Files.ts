@@ -26,7 +26,7 @@ class ListeCons<E> implements Liste<E> {
 class ModuleFileParListe<E> implements ModuleFile<Liste<E>, E> {
 
     estVide(f: Liste<E>): boolean {
-        return f.filtrage(()=>true, (t:E, r:Liste<E>)=>false);
+        return f.filtrage<boolean>(() => true, (t:E, r:Liste<E>) => false)
     }
 
     retrait(f: Liste<E>): [E, Liste<E>] {
@@ -44,11 +44,7 @@ class ModuleFileParListe<E> implements ModuleFile<Liste<E>, E> {
 
     ajout(e: E, f: Liste<E>): Liste<E> {
         return f.filtrage<Liste<E>>(() => cons(e, new ListeVide()),(t,r) => {
-            if (r instanceof ListeVide) {
-                return cons(e, r);
-            } else {
-                return cons(t, this.ajout(e, r));
-            }
+            return cons(t, this.ajout(e, r));
         })
     }
 
@@ -77,29 +73,15 @@ class ModuleFileParDeuxListes<E> implements ModuleFile<[Liste<E>, Liste<E>], E> 
     }
 
 }
-class ModuleFileAbstrait<E> implements ModuleFile<any, E> {
+abstract class ModuleFileAbstrait<E> implements ModuleFile<any, E> {
+    abstract ajout(e: E, f: any): any;
 
-    constructor(private liste: ModuleFile<any, E>) {
-    }
-    elimination<R>(k: (t: ModuleFile<any, E>) => R): R {
-        return k(this.liste);
-    }
+    abstract estVide(f: any): boolean;
 
-    ajout(e: E, f: any): any {
-        return undefined;
-    }
+    abstract retrait(f: any): [E, any];
 
-    estVide(f: any): boolean {
-            return f.filtrage(()=>true, (t:E, r:Liste<E>)=>false);
-    }
+    abstract vide(): any;
 
-    retrait(f: any): [E, any] {
-        return [undefined, undefined];
-    }
-
-    vide(): any {
-        return new ListeVide();
-    }
 
 }
 function vide<E>(): Liste<E> {
@@ -130,20 +112,22 @@ function miroir<E>(liste : Liste<E>) : Liste<E> {
 }
 
 // Fabrique
-function abstraction<F, E>(m: ModuleFile<F, E>): ModuleFileAbstrait<E> {
-    return new ModuleFileAbstrait(m);
+export function abstraction<F, E>(m: ModuleFile<F, E>): ModuleFileAbstrait<E> {
+    return m;
 }
-
-
 function representation<M, E>(m: ModuleFile<M, E>, f: M): string {
-    return abstraction(m).elimination(() => {
-        let listPrint = [];
-        while(!m.estVide(f)){
-            listPrint.push(String(m.retrait(f)[0]));
-        }
-        return listPrint.join(";");
-    });
+
+    let result = [];
+    while(!m.estVide(f)){
+        let l = m.retrait(f);
+        result.push(String(l[0]));
+        f = l[1];
+    }
+    return result.join(";");
+
 }
+
+
 
 let listeReverse : Liste<string> = new ListeCons("P", new ListeCons("S", new ListeCons("G", new ListeVide()))) ;
 console.log("*************** LISTE AVANT REVERSE ***************") ;
@@ -170,27 +154,15 @@ console.log("*************** DOUBLE LISTE APRES RETRAIT ***************") ;
 console.log(mfp2l.retrait([l1,l2])) ;
 
 
-console.log("*************** MODULE ABSTRACTION ***************") ;
+console.log("*************** MODULE ABSTRACTION REPRESENTER ***************") ;
+let moduleAbstraction = abstraction(new ModuleFileParListe<number>());
 
-let module = abstraction(new ModuleFileParListe<number>());
-let liste = module.elimination((m) => {
-    m.vide();
-});
-liste = module.elimination((m) => {
-    m.ajout(3, liste);
-});
-liste = module.elimination((m) => {
-    m.ajout(4, liste);
-});
-liste = module.elimination((m) => {
-    m.ajout(5, liste);
-});
+let l: Liste<number> = moduleAbstraction.vide();
+l = moduleAbstraction.ajout(3, l);
+l = moduleAbstraction.ajout(4, l);
+l = moduleAbstraction.ajout(5, l);
+console.log(representation(moduleAbstraction, l));
 
-console.log(representation(module.elimination((k) => k), liste));
-let o = module.elimination((m) => {
-   // m.retrait(liste);
-});
+console.log("*************** MODULE ABSTRACTION RETRAIT ***************") ;
 
-console.log(o[0]);
-
-console.log(representation(module.elimination((k) => k), o[1]));
+let elementRetirer = moduleAbstraction.retrait(moduleAbstraction);

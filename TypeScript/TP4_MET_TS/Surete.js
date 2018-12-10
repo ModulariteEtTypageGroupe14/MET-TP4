@@ -52,3 +52,4 @@ var variance;
         console.log(e);
     }
 })(variance || (variance = {}));
+//# sourceMappingURL=Surete.js.map

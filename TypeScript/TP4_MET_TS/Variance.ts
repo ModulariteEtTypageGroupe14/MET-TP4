@@ -1,4 +1,4 @@
-// Variance ? Contravariance
+// Variance ? Covariance
 interface Liste1<T> {
     tete(): T;
     reste(): Liste1<T>;

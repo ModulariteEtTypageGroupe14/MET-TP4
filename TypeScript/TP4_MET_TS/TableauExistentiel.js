@@ -21,3 +21,4 @@ arrayArep.push("1");
 arrayArep.push(2);
 arrayArep.push("a");
 console.log(representer(new TableauExistentiel(arrayArep)));
+//# sourceMappingURL=TableauExistentiel.js.map
